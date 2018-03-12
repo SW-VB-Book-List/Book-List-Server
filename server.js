@@ -67,6 +67,35 @@ app.post('/api/books', (request, response) => {
         });
 });
 
+app.put('/api/books/:id', (request, response) => {
+
+    const body = request.body;
+
+    client.query(`
+        UPDATE books
+        SET title=$1, 
+            author=$2,
+            isbn=$3,
+            image_url=$4,
+            description=$5
+        WHERE id=$6
+        RETURNING 
+            id, 
+            title, 
+            author,
+            isbn,
+            image_url,
+            description;   
+    `,
+    [body.title, body.author, body.isbn, body.image_url, body.description, body.id]
+    )
+        .then(result => response.send(result.rows[0]))
+        .catch(err => {
+            console.log(err);
+        });
+
+});
+
 
 app.listen(PORT, () => {
     console.log('server running on PORT ', PORT);
