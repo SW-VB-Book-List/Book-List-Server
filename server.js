@@ -40,6 +40,22 @@ app.get('/api/books', (request, response) => {
         });
 });
 
+app.get('/api/v1/books/:id'), (request, response) => {
+    const body = request.body;
+    client.query(
+        `
+        SELECT *
+        FROM books
+        WHERE id = $1;        
+        `,
+        [body.id]
+    )
+        .then(result => response.send(result.rows))
+        .catch(err => {
+            console.error(err);
+        });
+};
+
 app.post('/api/books', (request, response) => {
     const body = request.body;
     client.query(`
