@@ -1,5 +1,3 @@
-
-
 'use strict';
 
 const dotenv = require('dotenv');
@@ -13,13 +11,11 @@ const PORT = process.env.PORT || 3000;
 
 const app = express();
 
+// APIs go here
 app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
-
-
-// APIs go here
 
 const client = require('./db-client');
 
@@ -111,7 +107,6 @@ app.put('/api/books/:id', (request, response) => {
         });
 
 });
-
 
 app.listen(PORT, () => {
     console.log('server running on PORT ', PORT);
