@@ -3,15 +3,14 @@
 const dotenv = require('dotenv');
 dotenv.config();
 
+const PORT = process.env.PORT || 3000;
+
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
 
-const PORT = process.env.PORT || 3000;
-
 const app = express();
 
-// APIs go here
 app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
