@@ -36,8 +36,8 @@ app.get('/api/books', (request, response) => {
         });
 });
 
-app.get('/api/v1/books/:id'), (request, response) => {
-    const body = request.body;
+app.get('/api/v1/books/:id', (request, response) => {
+    const body = request.params.id;
     client.query(
         `
         SELECT *
@@ -46,11 +46,14 @@ app.get('/api/v1/books/:id'), (request, response) => {
         `,
         [body.id]
     )
-        .then(result => response.send(result.rows))
+        .then(result => {
+            if(result.rows.length === 0) response.sendStatus(404);
+            else response.send(result.rows[0]);
+        })
         .catch(err => {
             console.error(err);
         });
-};
+});
 
 app.post('/api/books', (request, response) => {
     const body = request.body;
