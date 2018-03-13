@@ -23,7 +23,7 @@ app.use(express.urlencoded({extended: true}));
 
 const client = require('./db-client');
 
-app.get('/books', (request, response) => {
+app.get('/api/books', (request, response) => {
     client.query(`
         SELECT 
             id, 
