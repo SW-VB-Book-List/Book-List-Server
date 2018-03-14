@@ -35,15 +35,15 @@ app.get('/api/books', (request, response) => {
         });
 });
 
-app.get('/api/v1/books/:id', (request, response) => {
-    const body = request.params.id;
+app.get('/api/books/:id', (request, response) => {
+    const id = request.params.id;
     client.query(
         `
         SELECT *
         FROM books
         WHERE id = $1;        
         `,
-        [body.id]
+        [id]
     )
         .then(result => {
             if(result.rows.length === 0) response.sendStatus(404);
