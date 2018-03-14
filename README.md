@@ -1,19 +1,18 @@
 # Project Name
 
-**Author**: Your Name Goes Here
-**Version**: 1.0.0 (increment the patch/fix version number up if you make more commits past your first submission)
+**Author**: Steele Walston and Victor Bofill
+**Version**: 1.0.0
 
 ## Overview
-<!-- Provide a high level overview of what this application is and why you are building it, beyond the fact that it's an assignment for a Code Fellows 301 class. (i.e. What's your problem domain?) 
+This project simulates a collection of books, making use of databases and server communication.
 
-
-Include a link to your live site if it's deployed. -->
+https://sw-vb-book-list.github.io/Book-List-Client/#!/home
 
 ## Getting Started
-<!-- What are the steps that a developer must take in order to build this app on their own machine and get it running? -->
+Fork the branch and code away!
 
 ## Architecture
-<!-- Provide a detailed description of the application design. What technologies (languages, libraries, etc) you're using, and any other relevant design information. -->
+This project makes use of the following third party software: eslint, nodemon, cors, dotenv, express, morgan, pg.
 
 ## Credits and Collaborations
-<!-- Give credit (and a link) to other people or resources that helped you build this application. -->
+Special thanks to Alchey Code Lab!
