@@ -54,7 +54,7 @@ app.get('/api/v1/books/:id', (request, response) => {
         });
 });
 
-app.post('/api/books', (request, response) => {
+app.post('/api/books/new', (request, response) => {
     const body = request.body;
     client.query(`
         INSERT INTO books (
