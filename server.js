@@ -65,13 +65,7 @@ app.post('/api/books/new', (request, response) => {
             description 
         )
         VALUES ($1, $2, $3, $4, $5)
-        RETURNING 
-            id,
-            title, 
-            author,
-            isbn,
-            image_url,
-            description; 
+        RETURNING *; 
     `,
     [body.title, body.author, body.isbn, body.image_url, body.description]
     )
@@ -93,13 +87,7 @@ app.put('/api/books/:id', (request, response) => {
             image_url=$4,
             description=$5
         WHERE id=$6
-        RETURNING 
-            id, 
-            title, 
-            author,
-            isbn,
-            image_url,
-            description;   
+        RETURNING *;   
     `,
     [body.title, body.author, body.isbn, body.image_url, body.description, body.id]
     )
