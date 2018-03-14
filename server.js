@@ -4,6 +4,8 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const PORT = process.env.PORT || 3000;
+const ADMIN_PASSPHRASE = process.env.ADMIN_PASSPHRASE;
+const CLIENT_URL = process.env.CLIENT_URL;
 
 const express = require('express');
 const morgan = require('morgan');
@@ -18,7 +20,23 @@ app.use(express.urlencoded({extended: true}));
 
 const client = require('./db-client');
 
-app.get('/api/books', (request, response) => {
+function ensureAdmin(request, response, next) {
+
+    const token = request.get('token') || request.query.token;
+    if(!token) next({ status: 401, message: 'No token found' });
+
+    else if(token !== ADMIN_PASSPHRASE) next({ status: 403, message: 'Unauthorized'});
+
+    else next();
+}
+
+app.get('/api/admin', (request, response) => {
+    ensureAdmin(request, response, err => {
+        response.send({ admin: !err });
+    });
+});
+
+app.get('/api/books', (request, response, next) => {
     client.query(`
         SELECT 
             id, 
@@ -30,12 +48,10 @@ app.get('/api/books', (request, response) => {
         FROM books;    
     `)
         .then(result => response.send(result.rows))
-        .catch(err => {
-            console.error(err);
-        });
+        .catch(next);
 });
 
-app.get('/api/books/:id', (request, response) => {
+app.get('/api/books/:id', (request, response, next) => {
     const id = request.params.id;
     client.query(
         `
@@ -46,16 +62,15 @@ app.get('/api/books/:id', (request, response) => {
         [id]
     )
         .then(result => {
-            if(result.rows.length === 0) response.sendStatus(404);
+            if(result.rows.length === 0) next({ status: 404, message: `Books id ${id} does not exist`});
             else response.send(result.rows[0]);
         })
-        .catch(err => {
-            console.error(err);
-        });
+        .catch(next);
 });
 
-app.post('/api/books/new', (request, response) => {
+app.post('/api/books/new', (request, response, next) => {
     const body = request.body;
+
     client.query(`
         INSERT INTO books (
             title, 
@@ -70,12 +85,10 @@ app.post('/api/books/new', (request, response) => {
     [body.title, body.author, body.isbn, body.image_url, body.description]
     )
         .then(result => response.send(result.rows[0]))
-        .catch(err => {
-            console.log(err);
-        });
+        .catch(next);
 });
 
-app.put('/api/books/:id', (request, response) => {
+app.put('/api/books/:id', (request, response, next) => {
 
     const body = request.body;
 
@@ -92,10 +105,38 @@ app.put('/api/books/:id', (request, response) => {
     [body.title, body.author, body.isbn, body.image_url, body.description, body.id]
     )
         .then(result => response.send(result.rows[0]))
-        .catch(err => {
-            console.log(err);
-        });
+        .catch(next);
 
+});
+
+app.delete('/api/books/:id', ensureAdmin, (request, response, next) => {
+    const id = request.params.id;
+
+    client.query(`
+        DELETE FROM books
+        WHERE id=$1;
+    `,
+    [id]
+    )
+        .then(result => response.send({ removed: result.rowCount !== 0}))
+        .catch(next);
+
+});
+
+app.get('*', (request, response) => {
+    response.redirect(CLIENT_URL);
+
+});
+
+app.use((err, request, response, next) => { //eslint-disable-line
+    console.error(err);
+
+    if(err.status) {
+        response.status(err.status).send({ error: err.message });
+    }
+    else {
+        response.sendStatus(500);
+    }
 });
 
 app.listen(PORT, () => {
