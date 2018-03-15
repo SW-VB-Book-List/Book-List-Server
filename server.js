@@ -80,7 +80,7 @@ app.post('/api/books/new', (request, response, next) => {
             description 
         )
         VALUES ($1, $2, $3, $4, $5)
-        RETURNING *; 
+        RETURNING *;   
     `,
     [body.title, body.author, body.isbn, body.image_url, body.description]
     )
