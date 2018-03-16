@@ -132,13 +132,13 @@ app.delete('/api/books/:id', ensureAdmin, (request, response, next) => {
 
 });
 
-app.get('/api/gbooks?=:search', (request, response, next) => {
+app.get('/api/gbooks', (request, response, next) => {
     const search = request.query.search;
     if(!search) return next({ status: 400, message: 'search query must be provided'});
 
     sa.get(GOOGLE_BOOKS_API_URL)
         .query({
-            q: search
+            q: search.trim()
         })
         .then(res => {
             const body = res.body;
