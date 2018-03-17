@@ -132,14 +132,14 @@ app.delete('/api/books/:id', ensureAdmin, (request, response, next) => {
 
 });
 
-app.get('/api/gbooks', (request, response, next) => {
+app.get('/books/search/gbooks', (request, response, next) => {
     const search = request.query.search;
     if(!search) return next({ status: 400, message: 'Search query must be provided'});
 
     sa.get(GOOGLE_BOOKS_API_URL)
         .query({
             q: search.trim(),
-            apikey: GOOGLE_BOOKS_API_KEY //eslint-disable-line
+            // apikey: GOOGLE_BOOKS_API_KEY //eslint-disable-line
         })
         .then(res => {
             const body = res.body;
@@ -160,31 +160,30 @@ app.get('/api/gbooks', (request, response, next) => {
 
         })
         .catch(next);
-
 });
 
-app.put('/api/books/gbooks/:id', (request, response, next) => {
-    const id = request.params.id;
+// app.put('/books/gbooks/:id', (request, response, next) => {
+//     const id = request.params.id;
 
-    sa.get(GOOGLE_BOOKS_API_URL)
-        .query({
-            id: `/${id}`
-        })
-        .then(res => {
-            const book = res.body;
-            return insertBook({
-                title: book.volumeInfo.title,
-                author: book.volumeInfo.authors,
-                isbn: book.volumeInfo.industryIdentifiers.ISBN_10,
-                image_url: book.volumeInfo.thumbnail,
-                description: book.volumeInfo.description
-            });
-        })
-        .then(result => response.send(result))
-        .catch(next);
+//     sa.get(GOOGLE_BOOKS_API_URL)
+//         .query({
+//             id: `/${id}`
+//         })
+//         .then(res => {
+//             const book = res.body;
+//             return insertBook({
+//                 title: book.volumeInfo.title,
+//                 author: book.volumeInfo.authors,
+//                 isbn: book.volumeInfo.industryIdentifiers.ISBN_10,
+//                 image_url: book.volumeInfo.thumbnail,
+//                 description: book.volumeInfo.description
+//             });
+//         })
+//         .then(result => response.send(result))
+//         .catch(next);
 
 
-});
+// });
 
 app.get('*', (request, response) => {
     response.redirect(CLIENT_URL);
