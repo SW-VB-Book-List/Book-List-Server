@@ -6,10 +6,13 @@ dotenv.config();
 const PORT = process.env.PORT || 3000;
 const ADMIN_PASSPHRASE = process.env.ADMIN_PASSPHRASE;
 const CLIENT_URL = process.env.CLIENT_URL;
+const GOOGLE_BOOKS_API_URL = process.env.GOOGLE_BOOKS_API_URL;
+// const GOOGLE_BOOKS_API_KEY = process.env.GOOGLE_BOOKS_API_KEY;
 
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
+const sa = require('superagent');
 
 const app = express();
 
@@ -68,10 +71,8 @@ app.get('/api/books/:id', (request, response, next) => {
         .catch(next);
 });
 
-app.post('/api/books/new', (request, response, next) => {
-    const body = request.body;
-
-    client.query(`
+function insertBook(book) {
+    return client.query(`
         INSERT INTO books (
             title, 
             author,
@@ -82,9 +83,17 @@ app.post('/api/books/new', (request, response, next) => {
         VALUES ($1, $2, $3, $4, $5)
         RETURNING *;   
     `,
-    [body.title, body.author, body.isbn, body.image_url, body.description]
+    [book.title, book.author, book.isbn, book.image_url, book.description]
     )
-        .then(result => response.send(result.rows[0]))
+        .then(result => result.rows[0]);
+
+}
+
+app.post('/api/books/new', (request, response, next) => {
+    const body = request.body;
+
+    insertBook(body)
+        .then(result => response.send(result))
         .catch(next);
 });
 
@@ -120,6 +129,60 @@ app.delete('/api/books/:id', ensureAdmin, (request, response, next) => {
     )
         .then(result => response.send({ removed: result.rowCount !== 0}))
         .catch(next);
+
+});
+
+app.get('/api/gbooks', (request, response, next) => {
+    const search = request.query.search;
+    if(!search) return next({ status: 400, message: 'Search query must be provided'});
+
+    sa.get(GOOGLE_BOOKS_API_URL)
+        .query({
+            q: search.trim(),
+            apikey: GOOGLE_BOOKS_API_KEY //eslint-disable-line
+        })
+        .then(res => {
+            const body = res.body;
+            const formatted = {
+                total: body.totalResults,
+                books: body.Search.map(book => {
+                    return {
+                        id: book.id,
+                        title: book.volumeInfo.title,
+                        author: book.volumeInfo.authors,
+                        isbn: book.volumeInfo.industryIdentifiers.ISBN_10,
+                        image_url: book.volumeInfo.thumbnail,
+                        description: book.volumeInfo.description
+                    };
+                })
+            };
+            response.send(formatted);
+
+        })
+        .catch(next);
+
+});
+
+app.put('/api/books/gbooks/:id', (request, response, next) => {
+    const id = request.params.id;
+
+    sa.get(GOOGLE_BOOKS_API_URL)
+        .query({
+            id: `/${id}`
+        })
+        .then(res => {
+            const book = res.body;
+            return insertBook({
+                title: book.volumeInfo.title,
+                author: book.volumeInfo.authors,
+                isbn: book.volumeInfo.industryIdentifiers.ISBN_10,
+                image_url: book.volumeInfo.thumbnail,
+                description: book.volumeInfo.description
+            });
+        })
+        .then(result => response.send(result))
+        .catch(next);
+
 
 });
 
